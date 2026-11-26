@@ -9,6 +9,7 @@ type Room = { code: string; players: Player[]; phase: 'lobby' | 'match'; stadium
 const id = () => Math.random().toString(36).slice(2, 10)
 const stadiums = ['Wankhede', 'Chepauk', 'Eden Gardens', 'Chinnaswamy', 'Narendra Modi Stadium', 'Sawai Mansingh']
 const blankRoom = (code: string, player: Player): Room => ({ code, players: [player], phase: 'lobby', stadium: stadiums[Math.floor(Math.random() * stadiums.length)], batting: 'CSK', bowling: 'MI', runs: 0, wickets: 0, balls: 0, message: 'Room is open. Bring your rivals.' })
+const deliveryHeight = (t: number) => t < .8 ? Math.max(.18, 2.2 + 1.2 * t - 4.9 * t * t) : Math.max(.18, 4.2 * (t - .8) - 4.9 * (t - .8) * (t - .8))
 
 export default function App() {
   const [name, setName] = useState(() => localStorage.getItem('jpl-name') || '')
@@ -41,7 +42,7 @@ export default function App() {
       if (!delivery || delivery.resolved) return
       const t = (performance.now() - delivery.started) / 1000
       const z = delivery.z + 13 * t
-      const y = Math.max(.18, delivery.y + delivery.vy * t - 4.9 * t * t)
+      const y = deliveryHeight(t)
       const x = delivery.x + delivery.vx * t
       setBall([x, y, z])
       if (z >= 8) {
@@ -126,7 +127,7 @@ export default function App() {
     if (!delivery || delivery.resolved) { setLastCall('WAIT FOR THE DELIVERY'); return }
     const t = (performance.now() - delivery.started) / 1000
     const z = delivery.z + 13 * t
-    const y = delivery.y + delivery.vy * t - 4.9 * t * t
+    const y = deliveryHeight(t)
     const x = delivery.x + delivery.vx * t
     if (z < 4.1 || z > 7.3 || y > 2.65 || y < .15) { setLastCall('TOO EARLY OR TOO LATE · BALL STILL LIVE'); return }
     delivery.resolved = true; setSwing(shot === 'drive' ? -.8 : shot === 'loft' ? -.55 : .25)
